@@ -32,7 +32,7 @@ Cypress.on('fail', (e) => {
 describe('', () => {
   beforeEach(() => {
     if (failed) {
-      Cypress.runner.stop(); // stop testing after a first fail
+      // Cypress.runner.stop(); // stop testing after a first fail
     }
 
     cy.visit('/');
@@ -77,7 +77,7 @@ describe('', () => {
       page.products().eq(0)
         .byDataCy('ProductUser')
         .should('have.text', 'Roma')
-        .and('have.class', 'has-text-link')
+        .and('have.class', 'has-text-link');
 
       page.products().eq(1)
         .byDataCy('ProductUser')
@@ -298,7 +298,7 @@ describe('', () => {
   });
 
   // Categories tests are skiped by default
-  describe.skip('Filter by categories', () => {
+  describe('Filter by categories', () => {
     it('should have All Categories Button active by default', () => {
       categoriesFilter.allButton().should('not.have.class', 'is-outlined');
     });
@@ -450,7 +450,7 @@ describe('', () => {
   });
 
   // Sorter tests are skiped by default
-  describe.skip('Sorter', () => {
+  describe('Sorter', () => {
     it('should show all sort icons in default state', () => {
       cy.get('[data-cy="SortIcon"].fa-sort').should('have.length', 4);
       cy.get('[data-cy="SortIcon"].fa-sort-up').should('not.exist');
