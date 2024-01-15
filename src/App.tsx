@@ -1,5 +1,4 @@
-/* eslint-disable max-len */
-/* eslint-disable jsx-a11y/accessible-emoji */
+/* eslint-disable max-len, jsx-a11y/accessible-emoji */
 import React from 'react';
 import cn from 'classnames';
 import './App.scss';
@@ -7,8 +6,8 @@ import './App.scss';
 import usersFromServer from './api/users';
 import categoriesFromServer from './api/categories';
 import productsFromServer from './api/products';
-import { SortLink } from './SortLink';
 import { User, Category, Product } from './types';
+import { ProductTable } from './ProductTable';
 
 const initialProducts: Product[] = productsFromServer.map((product) => {
   const category = categoriesFromServer
@@ -27,30 +26,6 @@ export const App = () => {
   const [query, setQuery] = React.useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
-  const [sortColumn, setSortColumn] = React.useState('');
-  const [isReversed, setIsReversed] = React.useState(false);
-
-  function sortBy(column: string) {
-    const first = column !== sortColumn;
-    const second = column === sortColumn && !isReversed;
-    const third = column === sortColumn && isReversed;
-
-    if (first) {
-      setSortColumn(column);
-      setIsReversed(false);
-    }
-
-    if (second) {
-      setSortColumn(column);
-      setIsReversed(true);
-    }
-
-    if (third) {
-      setSortColumn('');
-      setIsReversed(false);
-    }
-  }
-
   function reset() {
     setQuery('');
     setSelectedUser(null);
@@ -68,7 +43,7 @@ export const App = () => {
 
   if (selectedUser) {
     products = products.filter(
-      product => product.user?.id === selectedUser?.id,
+      product => product.user?.id === selectedUser.id,
     );
   }
 
@@ -78,35 +53,6 @@ export const App = () => {
     );
   }
   // #endregion
-
-  if (sortColumn) {
-    products.sort((productA, productB) => {
-      switch (sortColumn) {
-        case 'ID':
-          return productA.id - productB.id;
-        case 'Product':
-          return productA.name.localeCompare(productB.name);
-        case 'Category':
-          return productA.category.title
-            .localeCompare(productB.category.title);
-        case 'User': {
-          if (!productA.user || !productB.user) {
-            return 0;
-          }
-
-          return productA.user.name
-            .localeCompare(productB.user.name);
-        }
-
-        default:
-          return 0;
-      }
-    });
-  }
-
-  if (isReversed) {
-    products.reverse();
-  }
 
   return (
     <div className="section">
@@ -223,87 +169,7 @@ export const App = () => {
               No products matching selected criteria
             </p>
           ) : (
-            <table
-              data-cy="ProductTable"
-              className="table is-striped is-narrow is-fullwidth"
-            >
-              <thead>
-                <tr>
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      ID
-
-                      <SortLink
-                        isActive={sortColumn === 'ID'}
-                        isReversed={isReversed}
-                        onClick={() => sortBy('ID')}
-                      />
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      Product
-
-                      <SortLink
-                        isActive={sortColumn === 'Product'}
-                        isReversed={isReversed}
-                        onClick={() => sortBy('Product')}
-                      />
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      Category
-
-                      <SortLink
-                        isActive={sortColumn === 'Category'}
-                        isReversed={isReversed}
-                        onClick={() => sortBy('Category')}
-                      />
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      User
-
-                      <SortLink
-                        isActive={sortColumn === 'User'}
-                        isReversed={isReversed}
-                        onClick={() => sortBy('User')}
-                      />
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {products.map(({ category, user, ...product }) => (
-                  <tr data-cy="Product" key={product.id}>
-                    <td className="has-text-weight-bold" data-cy="ProductId">
-                      {product.id}
-                    </td>
-
-                    <td data-cy="ProductName">{product.name}</td>
-                    <td data-cy="ProductCategory">
-                      {`${category.icon} - ${category.title}`}
-                    </td>
-
-                    <td
-                      data-cy="ProductUser"
-                      className={cn({
-                        'has-text-link': user?.sex === 'm',
-                        'has-text-danger': user?.sex === 'f',
-                      })}
-                    >
-                      {user?.name}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ProductTable products={products} />
           )}
         </div>
       </div>
