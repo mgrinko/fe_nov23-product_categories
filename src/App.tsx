@@ -7,32 +7,22 @@ import './App.scss';
 import usersFromServer from './api/users';
 import categoriesFromServer from './api/categories';
 import productsFromServer from './api/products';
+import { SortLink } from './SortLink';
+import { User, Category, Product } from './types';
 
-const initialProducts = productsFromServer.map((product) => {
-  const category = categoriesFromServer.find(c => c.id === product.categoryId);
-  const user = usersFromServer.find(u => u.id === category.ownerId);
+const initialProducts: Product[] = productsFromServer.map((product) => {
+  const category = categoriesFromServer
+    .find(c => c.id === product.categoryId) as Category;
+
+  const user: User | null = usersFromServer
+    .find(u => u.id === category.ownerId) || null;
 
   return { category, user, ...product };
 });
 
-const SortLink = ({ isActive, isReversed, onClick }) => (
-  <a href="#/" onClick={onClick}>
-    <span className="icon">
-      <i
-        data-cy="SortIcon"
-        className={cn('fas', {
-          'fa-sort': !isActive,
-          'fa-sort-up': isActive && !isReversed,
-          'fa-sort-down': isActive && isReversed,
-        })}
-      />
-    </span>
-  </a>
-);
-
 export const App = () => {
-  const [categoryIds, setCategoryIds] = React.useState([]);
-  const [selectedUser, setSelectedUser] = React.useState(null);
+  const [categoryIds, setCategoryIds] = React.useState<number[]>([]);
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
 
   const [query, setQuery] = React.useState('');
   const normalizedQuery = query.trim().toLowerCase();
@@ -40,7 +30,7 @@ export const App = () => {
   const [sortColumn, setSortColumn] = React.useState('');
   const [isReversed, setIsReversed] = React.useState(false);
 
-  function sortBy(column) {
+  function sortBy(column: string) {
     const first = column !== sortColumn;
     const second = column === sortColumn && !isReversed;
     const third = column === sortColumn && isReversed;
@@ -78,7 +68,7 @@ export const App = () => {
 
   if (selectedUser) {
     products = products.filter(
-      product => product.user.id === selectedUser?.id,
+      product => product.user?.id === selectedUser?.id,
     );
   }
 
@@ -99,9 +89,15 @@ export const App = () => {
         case 'Category':
           return productA.category.title
             .localeCompare(productB.category.title);
-        case 'User':
+        case 'User': {
+          if (!productA.user || !productB.user) {
+            return 0;
+          }
+
           return productA.user.name
             .localeCompare(productB.user.name);
+        }
+
         default:
           return 0;
       }
@@ -298,11 +294,11 @@ export const App = () => {
                     <td
                       data-cy="ProductUser"
                       className={cn({
-                        'has-text-link': user.sex === 'm',
-                        'has-text-danger': user.sex === 'f',
+                        'has-text-link': user?.sex === 'm',
+                        'has-text-danger': user?.sex === 'f',
                       })}
                     >
-                      {user.name}
+                      {user?.name}
                     </td>
                   </tr>
                 ))}
